@@ -3,3 +3,4 @@ torchvision
 streamlit
 opencv-python
 numpy
+boto3

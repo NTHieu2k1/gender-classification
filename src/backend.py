@@ -2,6 +2,10 @@ import torch
 from torch import nn
 from torchvision import models
 from torchvision import transforms as T
+from io import BytesIO
+import requests
+import boto3
+import json
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -17,13 +21,11 @@ def load_model(checkpoint_path):
     # Base model
     model = models.vgg13(weights=None)
     model.classifier = nn.Sequential(
-        nn.Linear(7*7*512, 2048),
+        nn.Linear(7*7*512, 4096),
         nn.ReLU(),
-        nn.Dropout(0.2),
-        nn.Linear(2048, 2048),
+        nn.Linear(4096, 4096),
         nn.ReLU(),
-        nn.Dropout(0.2),
-        nn.Linear(2048, 1)
+        nn.Linear(4096, 1)
     )
     if device == 'cpu':
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
@@ -46,3 +48,21 @@ def classify(image, model, transform, return_proba=False):
             pred_class = 'Female'
             pred_prob = 1 - pred
     return pred_class, pred_prob if return_proba else None
+
+
+def upload_n_classify(request_data):
+    runtime = boto3.client('sagemaker-runtime')
+    endpoint_name = 'gender-classifier'
+    response = runtime.invoke_endpoint(
+        EndpointName=endpoint_name,
+        ContentType='application/json',
+        Body=request_data
+    )
+    result = json.loads(response['Body'].read().decode())
+    return result
+
+
+
+
+
+
