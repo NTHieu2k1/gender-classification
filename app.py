@@ -12,7 +12,7 @@ with col1:
     form = st.form('main_form')
 with col2:
     image_area = st.container(border=True, height=400)
-pred_area = st.container(border=True, height=100)
+pred_area = st.container(border=True, height=150)
 
 with form:
     file = st.file_uploader(label='Choose an image here', type=['jpg', 'jpeg'])
